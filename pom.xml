@@ -46,14 +46,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- guava version -->
-        <guava.version>28.1-jre</guava.version>
-
         <!-- Http Components version -->
         <http-components.version>4.5.10</http-components.version>
-
-        <!-- Jackson version -->
-        <jackson.version>2.9.9</jackson.version>
 
         <!-- Specify which Checkstyle ruleset to use -->
         <checkstyle.ruleset>build/checkstyle-v1.5.xml</checkstyle.ruleset>
@@ -79,25 +73,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${http-components.version}</version>
-        </dependency>
-
-        <!-- Guava for Preconditions and URI Escaping -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-
-        <!-- For parsing XML responses to POJOs -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Logging -->
