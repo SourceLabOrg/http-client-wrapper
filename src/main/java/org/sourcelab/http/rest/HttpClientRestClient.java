@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2019 SourceLab.org https://github.com/SourceLabOrg/kafka-connect-client
+ * Copyright 2019 SourceLab.org https://github.com/SourceLabOrg/HttpClientWrapper
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -14,7 +14,6 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package org.sourcelab.http.rest;
 
 import org.apache.http.HttpEntity;
@@ -187,7 +186,7 @@ public class HttpClientRestClient implements RestClient {
                 // parse ApiHost for Hostname and port.
                 final URL apiUrl = new URL(configuration.getApiHost());
 
-                // Add Kafka-Connect credentials
+                // Add credentials
                 credsProvider.setCredentials(
                     new AuthScope(apiUrl.getHost(), apiUrl.getPort()),
                     new UsernamePasswordCredentials(
