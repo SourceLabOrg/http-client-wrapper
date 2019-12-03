@@ -245,7 +245,7 @@ public class HttpClientRestClient implements RestClient {
         try {
             switch (request.getRequestMethod()) {
                 case GET:
-                    return submitGetRequest(url, Collections.emptyMap(), responseHandler);
+                    return submitGetRequest(url, (Map<String, String>) request.getRequestBody(), responseHandler);
                 case POST:
                     return submitPostRequest(url, request.getRequestBody(), responseHandler);
                 case PUT:
@@ -272,6 +272,9 @@ public class HttpClientRestClient implements RestClient {
         final RequestContext requestContext = new RequestContext(url, RequestMethod.GET);
 
         try {
+            // Pass request parameters through interceptor.
+            requestInterceptor.modifyRequestParameters(getParams, requestContext);
+
             // Construct URI including our request parameters.
             final URIBuilder uriBuilder = new URIBuilder(url)
                 .setCharset(StandardCharsets.UTF_8);
