@@ -47,14 +47,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sourcelab.http.rest.configuration.Configuration;
 import org.sourcelab.http.rest.configuration.ProxyConfiguration;
-import org.sourcelab.http.rest.configuration.RequestHeader;
+import org.sourcelab.http.rest.request.RequestHeader;
 import org.sourcelab.http.rest.exceptions.ConnectionException;
 import org.sourcelab.http.rest.exceptions.ResultParsingException;
 import org.sourcelab.http.rest.handlers.RestResponseHandler;
+import org.sourcelab.http.rest.interceptor.HeaderRequestInterceptor;
 import org.sourcelab.http.rest.interceptor.RequestContext;
 import org.sourcelab.http.rest.interceptor.RequestInterceptor;
 import org.sourcelab.http.rest.request.Request;
 import org.sourcelab.http.rest.request.RequestMethod;
+import org.sourcelab.http.rest.request.RequestParameter;
+import org.sourcelab.http.rest.request.body.RequestBodyContent;
+import org.sourcelab.http.rest.request.body.UrlEncodedFormBodyContent;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
@@ -65,10 +69,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -76,11 +77,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class HttpClientRestClient implements RestClient {
     private static final Logger logger = LoggerFactory.getLogger(HttpClientRestClient.class);
-
-    /**
-     * Default headers included with every request.
-     */
-    private Collection<RequestHeader> defaultHeaders = new ArrayList<>();
 
     /**
      * Save a copy of the configuration.
@@ -97,8 +93,7 @@ public class HttpClientRestClient implements RestClient {
     /**
      * To allow for custom modifications to request prior to submitting it.
      */
-    private RequestInterceptor requestInterceptor;
-
+    private final List<RequestInterceptor> requestInterceptors = new ArrayList<>();
 
     /**
      * Constructor.
@@ -116,13 +111,16 @@ public class HttpClientRestClient implements RestClient {
         // Save reference to configuration
         this.configuration = configuration;
 
-        // Load RequestMutator instance from configuration.
-        requestInterceptor = configuration.getRequestInterceptor();
-
         // Load default headers
-        if (configuration.getRequestHeaders() != null) {
-            defaultHeaders = Collections.unmodifiableCollection(configuration.getRequestHeaders());
+        if (configuration.getRequestHeaders() != null && !configuration.getRequestHeaders().isEmpty()) {
+            // Add interceptor to add headers to all requests.
+            requestInterceptors.add(
+                new HeaderRequestInterceptor(configuration.getRequestHeaders())
+            );
         }
+
+        // Load RequestMutator instance from configuration.
+        requestInterceptors.addAll(configuration.getRequestInterceptors());
 
         // Create https context builder utility.
         final HttpsContextBuilder httpsContextBuilder = new HttpsContextBuilder(configuration);
@@ -245,7 +243,7 @@ public class HttpClientRestClient implements RestClient {
         try {
             switch (request.getRequestMethod()) {
                 case GET:
-                    return submitGetRequest(url, (Map<String, String>) request.getRequestBody(), responseHandler);
+                    return submitGetRequest(url, request.getRequestBody(), responseHandler);
                 case POST:
                     return submitPostRequest(url, request.getRequestBody(), responseHandler);
                 case PUT:
@@ -263,25 +261,33 @@ public class HttpClientRestClient implements RestClient {
     /**
      * Internal GET method.
      * @param url Url to GET to.
-     * @param getParams GET parameters to include in the request
+     * @param requestBodyContent parameters to include in the request
      * @param responseHandler The response Handler to use to parse the response
      * @param <T> The type that ResponseHandler returns.
      * @return Parsed response.
      */
-    private <T> T submitGetRequest(final String url, final Map<String, String> getParams, final ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T submitGetRequest(
+        final String url,
+        final RequestBodyContent requestBodyContent,
+        final ResponseHandler<T> responseHandler
+    ) throws IOException {
         final RequestContext requestContext = new RequestContext(url, RequestMethod.GET);
 
         try {
-            // Pass request parameters through interceptor.
-            requestInterceptor.modifyRequestParameters(getParams, requestContext);
-
             // Construct URI including our request parameters.
             final URIBuilder uriBuilder = new URIBuilder(url)
                 .setCharset(StandardCharsets.UTF_8);
 
-            // Attach submitRequest params
-            for (final Map.Entry<String, String> entry : getParams.entrySet()) {
-                uriBuilder.setParameter(entry.getKey(), entry.getValue());
+            if (requestBodyContent instanceof UrlEncodedFormBodyContent) {
+                final List<RequestParameter> requestParameters = processRequestParameters(
+                    ((UrlEncodedFormBodyContent) requestBodyContent).getRequestParameters(),
+                    requestContext
+                );
+
+                // Attach submitRequest params
+                for (final RequestParameter requestParameter : requestParameters) {
+                    uriBuilder.setParameter(requestParameter.getName(), requestParameter.getValue());
+                }
             }
 
             // Build Get Request
@@ -306,12 +312,16 @@ public class HttpClientRestClient implements RestClient {
     /**
      * Internal POST method.
      * @param url Url to POST to.
-     * @param requestBody POST entity include in the request body
+     * @param requestBodyContent POST entity include in the request body
      * @param responseHandler The response Handler to use to parse the response
      * @param <T> The type that ResponseHandler returns.
      * @return Parsed response.
      */
-    private <T> T submitPostRequest(final String url, final Object requestBody, final ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T submitPostRequest(
+        final String url,
+        final RequestBodyContent requestBodyContent,
+        final ResponseHandler<T> responseHandler
+    ) throws IOException {
         final RequestContext requestContext = new RequestContext(url, RequestMethod.POST);
 
         try {
@@ -322,9 +332,9 @@ public class HttpClientRestClient implements RestClient {
 
             // Build request entity
             post.setEntity(
-                buildEntity(requestBody, requestContext)
+                buildEntity(requestBodyContent, requestContext)
             );
-            logger.debug("Executing request {} with {}", post.getRequestLine(), requestBody);
+            logger.debug("Executing request {} with {}", post.getRequestLine(), requestBodyContent);
 
             // Execute and return
             return httpClient.execute(post, responseHandler, httpClientContext);
@@ -340,12 +350,16 @@ public class HttpClientRestClient implements RestClient {
     /**
      * Internal PUT method.
      * @param url Url to POST to.
-     * @param requestBody POST entity include in the request body
+     * @param requestBodyContent POST entity include in the request body
      * @param responseHandler The response Handler to use to parse the response
      * @param <T> The type that ResponseHandler returns.
      * @return Parsed response.
      */
-    private <T> T submitPutRequest(final String url, final Object requestBody, final ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T submitPutRequest(
+        final String url,
+        final RequestBodyContent requestBodyContent,
+        final ResponseHandler<T> responseHandler
+    ) throws IOException {
         final RequestContext requestContext = new RequestContext(url, RequestMethod.PUT);
 
         try {
@@ -356,9 +370,9 @@ public class HttpClientRestClient implements RestClient {
 
             // Build request entity
             put.setEntity(
-                buildEntity(requestBody, requestContext)
+                buildEntity(requestBodyContent, requestContext)
             );
-            logger.debug("Executing request {} with {}", put.getRequestLine(), requestBody);
+            logger.debug("Executing request {} with {}", put.getRequestLine(), requestBodyContent);
 
             // Execute and return
             return httpClient.execute(put, responseHandler, httpClientContext);
@@ -410,33 +424,60 @@ public class HttpClientRestClient implements RestClient {
         return configuration.getApiHost() + endPoint;
     }
 
-    private HttpEntity buildEntity(final Object parameters, final RequestContext requestContext) throws UnsupportedEncodingException {
-        if (parameters instanceof Map) {
-            final Map<String, String> parametersMap = (Map<String, String>) parameters;
+    private HttpEntity buildEntity(final RequestBodyContent requestBodyContent, final RequestContext requestContext) throws UnsupportedEncodingException {
+        if (requestBodyContent instanceof UrlEncodedFormBodyContent) {
+            List<RequestParameter> requestParameters = processRequestParameters(
+                ((UrlEncodedFormBodyContent) requestBodyContent).getRequestParameters(), requestContext
+            );
 
-            // Pass request parameters through interceptor.
-            requestInterceptor.modifyRequestParameters(parametersMap, requestContext);
-
-            // Define required auth params
+            // Build Form parameters
             final List<NameValuePair> params = new ArrayList<>();
 
             // Attach submitRequest params
-            for (Map.Entry<String, String> entry : parametersMap.entrySet()) {
-                params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-            }
+            requestParameters
+                .forEach(parameter ->  params.add(new BasicNameValuePair(parameter.getName(), parameter.getValue()))
+            );
             return new UrlEncodedFormEntity(params);
         } else {
-            return new StringEntity(parameters.toString());
+            return new StringEntity(requestBodyContent.toString());
         }
     }
 
+    /**
+     * Process headers through requestInteceptor instances.
+     * @param requestBase The underlying request object.
+     * @param requestContext Contextual details about the request.
+     */
     private void buildHeaders(final HttpRequestBase requestBase, final RequestContext requestContext) {
         // Pass headers through interceptor interface
-        final List<RequestHeader> headers = new ArrayList<>(defaultHeaders);
-        requestInterceptor.modifyHeaders(headers, requestContext);
+        List<RequestHeader> headers = new ArrayList<>();
+        for (final RequestInterceptor requestInterceptor : requestInterceptors) {
+            headers = requestInterceptor.modifyHeaders(headers, requestContext);
+        }
+
+        // Add headers to the request instance.
         headers
             .stream()
             .map((entry) -> new BasicHeader(entry.getName(), entry.getValue()))
             .forEach(requestBase::addHeader);
+    }
+
+    /**
+     * Process request parameters through request interceptors.
+     *
+     * @param incomingParameters The defined request parameters.
+     * @param requestContext Contextual details about the request.
+     * @return Modified request parameters.
+     */
+    private List<RequestParameter> processRequestParameters(final List<RequestParameter> incomingParameters, final RequestContext requestContext) {
+        // Copy parameters
+        List<RequestParameter> requestParameters = new ArrayList<>(incomingParameters);
+
+        // Loop over each interceptor
+        for (final RequestInterceptor requestInterceptor : requestInterceptors) {
+            // Pass in the parameters and get the returned list.
+            requestParameters = requestInterceptor.modifyRequestParameters(requestParameters, requestContext);
+        }
+        return requestParameters;
     }
 }

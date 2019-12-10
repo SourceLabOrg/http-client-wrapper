@@ -17,42 +17,36 @@
 
 package org.sourcelab.http.rest.request;
 
-import org.sourcelab.http.rest.request.body.RequestBodyContent;
-
-import java.io.IOException;
-
 /**
- * Interface for all Requests to implement.
- * @param <T> return type of request.
+ * Represents a Http Request Header.
  */
-public interface Request<T> {
+public class RequestHeader {
+    private final String name;
+    private final String value;
 
     /**
-     * The name of the API end point to issue a request against.  This is appended to the API Hostname.
-     * @return The name of the end point this request uses.
+     * Constructor.
+     * @param name Name of the header.
+     * @param value Value of the header.
      */
-    String getApiEndpoint();
+    public RequestHeader(final String name, final String value) {
+        this.name = name;
+        this.value = value;
+    }
 
-    /**
-     * Request Method, IE POST, GET, etc..
-     * @return The type of HTTP Request.
-     */
-    RequestMethod getRequestMethod();
+    public String getName() {
+        return name;
+    }
 
-    /**
-     * Object to be submitted as the body of the request.
-     * The request body will be populated by calling .toString() on the returned object.
-     * Return null if no request body should be sent.
-     *
-     * @return Object representing request body content, or null if none required.
-     */
-    RequestBodyContent getRequestBody();
+    public String getValue() {
+        return value;
+    }
 
-    /**
-     * Parse the rest service's response into a concrete object.
-     * @param responseStr The servers response in string format.
-     * @return A concrete object representing the result.
-     * @throws IOException on parsing errors.
-     */
-    T parseResponse(final String responseStr) throws IOException;
+    @Override
+    public String toString() {
+        return "RequestHeader{"
+            + "name='" + name + '\''
+            + ", value='" + value + '\''
+            + '}';
+    }
 }

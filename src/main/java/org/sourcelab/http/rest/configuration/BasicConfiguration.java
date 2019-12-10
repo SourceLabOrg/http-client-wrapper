@@ -17,8 +17,8 @@
 
 package org.sourcelab.http.rest.configuration;
 
-import org.sourcelab.http.rest.interceptor.NoopRequestInterceptor;
 import org.sourcelab.http.rest.interceptor.RequestInterceptor;
+import org.sourcelab.http.rest.request.RequestHeader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class BasicConfiguration<SELF extends BasicConfiguration> implements Conf
     /**
      * Request interceptor.
      */
-    private RequestInterceptor requestInterceptor = new NoopRequestInterceptor();
+    private final List<RequestInterceptor> requestInterceptors = new ArrayList<>();
 
     /**
      * Request headers added to every request.
@@ -164,7 +164,7 @@ public class BasicConfiguration<SELF extends BasicConfiguration> implements Conf
      * @return Configuration instance.
      */
     public SELF useRequestInteceptor(final RequestInterceptor requestInterceptor) {
-        this.requestInterceptor = Objects.requireNonNull(requestInterceptor);
+        this.requestInterceptors.add(Objects.requireNonNull(requestInterceptor));
         return (SELF) this;
     }
 
@@ -222,8 +222,8 @@ public class BasicConfiguration<SELF extends BasicConfiguration> implements Conf
     }
 
     @Override
-    public RequestInterceptor getRequestInterceptor() {
-        return requestInterceptor;
+    public List<RequestInterceptor> getRequestInterceptors() {
+        return requestInterceptors;
     }
 
     @Override

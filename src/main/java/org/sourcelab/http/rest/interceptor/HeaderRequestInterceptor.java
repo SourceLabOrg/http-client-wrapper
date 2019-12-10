@@ -18,31 +18,41 @@
 package org.sourcelab.http.rest.interceptor;
 
 import org.sourcelab.http.rest.request.RequestHeader;
-import org.sourcelab.http.rest.request.RequestParameter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Interface that allows for making changes to the outbound API request prior to sending the request.
+ * Implementation that allows for adding a static set of headers to all requests.
  */
-public interface RequestInterceptor {
+public class HeaderRequestInterceptor implements RequestInterceptor {
 
     /**
-     * Passed a mutable Map of request parameters prior to sending the request.
-     * Adding, removing, or modifying any members in this map will alter the values
-     * sent in the request.
-     *
-     * @param requestParameters Mutable map representing request parameter values.
-     * @param requestContext Contextual details about the request.
-     * @return Modified list of RequestParameters.
+     * Holds our default Headers.
      */
-    default List<RequestParameter> modifyRequestParameters(
-        final List<RequestParameter> requestParameters,
-        final RequestContext requestContext
-    ) {
-        // Nothing to modify.
-        return requestParameters;
+    private final List<RequestHeader> headers;
+
+    /**
+     * Constructor.
+     * @param headers map of header names to values.
+     */
+    public HeaderRequestInterceptor(final Map<String, String> headers) {
+        final List<RequestHeader> listOfHeaders = new ArrayList<>();
+        headers
+            .forEach((name, value) -> listOfHeaders.add(new RequestHeader(name, value)));
+
+        this.headers = Collections.unmodifiableList(listOfHeaders);
+    }
+
+    /**
+     * Constructor.
+     * @param headers list of request headers.
+     */
+    public HeaderRequestInterceptor(final List<RequestHeader> headers) {
+        final List<RequestHeader> listOfHeaders = new ArrayList<>(headers);
+        this.headers = Collections.unmodifiableList(listOfHeaders);
     }
 
     /**
@@ -50,12 +60,12 @@ public interface RequestInterceptor {
      * Adding, removing, or modifying any members in this list will alter the values
      * sent in the request headers.
      *
-     * @param requestHeaders Mutable list representing request header values.
-     * @param requestContext Contextual details about the request.
-     * @return List of modified request headers.
+     * @param requestHeaders list representing request header values.
+     * @return The modified list.
      */
-    default List<RequestHeader> modifyHeaders(final List<RequestHeader> requestHeaders, final RequestContext requestContext) {
-        // Nothing to modify.
+    @Override
+    public List<RequestHeader> modifyHeaders(final List<RequestHeader> requestHeaders, final RequestContext requestContext) {
+        requestHeaders.addAll(headers);
         return requestHeaders;
     }
 }

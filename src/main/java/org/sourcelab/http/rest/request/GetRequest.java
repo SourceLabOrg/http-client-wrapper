@@ -18,26 +18,22 @@
 package org.sourcelab.http.rest.request;
 
 import org.sourcelab.http.rest.request.body.RequestBodyContent;
-
-import java.io.IOException;
+import org.sourcelab.http.rest.request.body.UrlEncodedFormBodyContent;
 
 /**
- * Interface for all Requests to implement.
- * @param <T> return type of request.
+ * Defines interface for GET requests.
+ * @param <T> Defines the return type of the request.
  */
-public interface Request<T> {
+public interface GetRequest<T> extends Request<T> {
 
     /**
-     * The name of the API end point to issue a request against.  This is appended to the API Hostname.
-     * @return The name of the end point this request uses.
+     * All GET requests use GET.
+     * @return RequestMethod.GET
      */
-    String getApiEndpoint();
-
-    /**
-     * Request Method, IE POST, GET, etc..
-     * @return The type of HTTP Request.
-     */
-    RequestMethod getRequestMethod();
+    @Override
+    default RequestMethod getRequestMethod() {
+        return RequestMethod.GET;
+    }
 
     /**
      * Object to be submitted as the body of the request.
@@ -46,13 +42,8 @@ public interface Request<T> {
      *
      * @return Object representing request body content, or null if none required.
      */
-    RequestBodyContent getRequestBody();
-
-    /**
-     * Parse the rest service's response into a concrete object.
-     * @param responseStr The servers response in string format.
-     * @return A concrete object representing the result.
-     * @throws IOException on parsing errors.
-     */
-    T parseResponse(final String responseStr) throws IOException;
+    @Override
+    default RequestBodyContent getRequestBody() {
+        return new UrlEncodedFormBodyContent();
+    }
 }

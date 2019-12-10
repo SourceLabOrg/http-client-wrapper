@@ -15,38 +15,15 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.sourcelab.http.rest.configuration;
+package org.sourcelab.http.rest.request;
 
 /**
- * Represents a Http Request Header.
+ * Defines interface for POST requests.
+ * @param <T> Defines the return type of the request.
  */
-public class RequestHeader {
-    private final String name;
-    private final String value;
-
-    /**
-     * Constructor.
-     * @param name Name of the header.
-     * @param value Value of the header.
-     */
-    public RequestHeader(final String name, final String value) {
-        this.name = name;
-        this.value = value;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
+public interface PostRequest<T> extends Request<T> {
     @Override
-    public String toString() {
-        return "RequestHeader{"
-            + "name='" + name + '\''
-            + ", value='" + value + '\''
-            + '}';
+    default RequestMethod getRequestMethod() {
+        return RequestMethod.POST;
     }
 }

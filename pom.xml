@@ -15,9 +15,9 @@
     </prerequisites>
 
     <!-- Module Description and Ownership -->
-    <name>ActiveCampaign API Client</name>
-    <description>A client for ActiveCampaign's API</description>
-    <url>https://github.com/sourcelaborg/activecampaign-java-client</url>
+    <name>Http Client Wrapper</name>
+    <description>A collection of abstracted http rest client libraries.</description>
+    <url>https://github.com/SourceLabOrg/http-client-wrapper</url>
     <developers>
         <developer>
             <name>Stephen Powis</name>
@@ -37,9 +37,9 @@
 
     <!-- Source Control -->
     <scm>
-        <connection>scm:git:git://github.com/sourcelaborg/HttpClientWrapper.git</connection>
-        <developerConnection>scm:git:ssh://github.com:sourcelaborg/HttpClientWrapper.git</developerConnection>
-        <url>https://github.com/SourceLabOrg/HttpClientWrapper/tree/master</url>
+        <connection>scm:git:git://github.com/sourcelaborg/http-client-wrapper.git</connection>
+        <developerConnection>scm:git:ssh://github.com:sourcelaborg/http-client-wrapper.git</developerConnection>
+        <url>https://github.com/SourceLabOrg/http-client-wrapper/tree/master</url>
     </scm>
 
     <!-- Module Properties -->

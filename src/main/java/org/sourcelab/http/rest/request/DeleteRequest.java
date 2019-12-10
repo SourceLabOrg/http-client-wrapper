@@ -17,27 +17,18 @@
 
 package org.sourcelab.http.rest.request;
 
+import org.sourcelab.http.rest.request.body.NoBodyContent;
 import org.sourcelab.http.rest.request.body.RequestBodyContent;
 
-import java.io.IOException;
-
 /**
- * Interface for all Requests to implement.
- * @param <T> return type of request.
+ * Defines interface for DELETE requests.
+ * @param <T> Defines the return type of the request.
  */
-public interface Request<T> {
-
-    /**
-     * The name of the API end point to issue a request against.  This is appended to the API Hostname.
-     * @return The name of the end point this request uses.
-     */
-    String getApiEndpoint();
-
-    /**
-     * Request Method, IE POST, GET, etc..
-     * @return The type of HTTP Request.
-     */
-    RequestMethod getRequestMethod();
+public interface DeleteRequest<T> extends Request<T> {
+    @Override
+    default RequestMethod getRequestMethod() {
+        return RequestMethod.DELETE;
+    }
 
     /**
      * Object to be submitted as the body of the request.
@@ -46,13 +37,8 @@ public interface Request<T> {
      *
      * @return Object representing request body content, or null if none required.
      */
-    RequestBodyContent getRequestBody();
-
-    /**
-     * Parse the rest service's response into a concrete object.
-     * @param responseStr The servers response in string format.
-     * @return A concrete object representing the result.
-     * @throws IOException on parsing errors.
-     */
-    T parseResponse(final String responseStr) throws IOException;
+    @Override
+    default RequestBodyContent getRequestBody() {
+        return new NoBodyContent();
+    }
 }

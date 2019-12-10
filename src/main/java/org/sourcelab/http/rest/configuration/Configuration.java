@@ -18,6 +18,7 @@
 package org.sourcelab.http.rest.configuration;
 
 import org.sourcelab.http.rest.interceptor.RequestInterceptor;
+import org.sourcelab.http.rest.request.RequestHeader;
 
 import java.io.File;
 import java.util.List;
@@ -98,7 +99,7 @@ public interface Configuration {
      * Implementation for intercepting requests.
      * @return instance.
      */
-    RequestInterceptor getRequestInterceptor();
+    List<RequestInterceptor> getRequestInterceptors();
 
     /**
      * Immutable list of request headers to be sent with every request.

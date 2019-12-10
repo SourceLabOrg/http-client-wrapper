@@ -14,6 +14,7 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package org.sourcelab.http.rest;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -22,6 +23,8 @@ import org.sourcelab.http.rest.configuration.BasicConfiguration;
 import org.sourcelab.http.rest.configuration.Configuration;
 import org.sourcelab.http.rest.request.Request;
 import org.sourcelab.http.rest.request.RequestMethod;
+import org.sourcelab.http.rest.request.body.RequestBodyContent;
+import org.sourcelab.http.rest.request.body.StringBodyContent;
 import testserver.TestHttpServer;
 
 import java.io.File;
@@ -177,8 +180,8 @@ class HttpClientRestClientTest {
         }
 
         @Override
-        public Object getRequestBody() {
-            return requestBody;
+        public RequestBodyContent getRequestBody() {
+            return new StringBodyContent(requestBody);
         }
 
         @Override
