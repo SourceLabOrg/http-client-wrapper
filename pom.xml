@@ -50,7 +50,7 @@
         <http-components.version>4.5.10</http-components.version>
 
         <!-- Specify which Checkstyle ruleset to use -->
-        <checkstyle.ruleset>build/checkstyle-v1.5.xml</checkstyle.ruleset>
+        <checkstyle.ruleset>build/checkstyle.xml</checkstyle.ruleset>
         <checkstyle.plugin.version>3.0.0</checkstyle.plugin.version>
         <checkstyle.version>8.24</checkstyle.version>
 
