@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.sourcelab.http</groupId>
-    <artifactId>HttpClientWrapper</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <artifactId>http-client-wrapper</artifactId>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <!-- Require Maven 3.3.9 -->
@@ -16,7 +16,7 @@
 
     <!-- Module Description and Ownership -->
     <name>Http Client Wrapper</name>
-    <description>A collection of abstracted http rest client libraries.</description>
+    <description>A library to abstract common patterns for building http rest clients.</description>
     <url>https://github.com/SourceLabOrg/http-client-wrapper</url>
     <developers>
         <developer>
