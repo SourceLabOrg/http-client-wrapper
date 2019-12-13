@@ -20,8 +20,14 @@ package org.sourcelab.http.rest.request.body;
 /**
  * Submit no request body.
  */
-public class NoBodyContent extends StringBodyContent {
+public class NoBodyContent implements RequestBodyContent {
+    public static final RequestBodyContent INSTANCE = new NoBodyContent();
+
     public NoBodyContent() {
-        super(null);
+    }
+
+    @Override
+    public String toString() {
+        return null;
     }
 }

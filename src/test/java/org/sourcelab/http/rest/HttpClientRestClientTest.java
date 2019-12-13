@@ -21,13 +21,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.sourcelab.http.rest.configuration.BasicConfiguration;
 import org.sourcelab.http.rest.configuration.Configuration;
+import org.sourcelab.http.rest.request.PostRequest;
 import org.sourcelab.http.rest.request.Request;
 import org.sourcelab.http.rest.request.RequestMethod;
+import org.sourcelab.http.rest.request.body.NoBodyContent;
 import org.sourcelab.http.rest.request.body.RequestBodyContent;
 import org.sourcelab.http.rest.request.body.StringBodyContent;
 import testserver.TestHttpServer;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -147,6 +150,47 @@ class HttpClientRestClientTest {
             restClient.init(configuration);
 
             final RestResponse result = restClient.submitRequest(new DummyRequest());
+            assertEquals(RESPONSE_DATA, result.getResponseStr());
+        }
+    }
+
+    /**
+     * Test sending a nobody content request.
+     */
+    @Test
+    public void testPostWithNoBodyContent() throws Exception {
+
+        try (final TestHttpServer httpServer = new TestHttpServer()
+            .withHttp(HTTP_PORT)
+            .withMockData(RESPONSE_DATA)
+            .start()
+        ) {
+
+            // Create client
+            final Configuration configuration = new BasicConfiguration("http://localhost:" + HTTP_PORT);
+            final HttpClientRestClient restClient = new HttpClientRestClient();
+            restClient.init(configuration);
+
+            // Make request
+            final Request<String> request = new PostRequest<String>() {
+                @Override
+                public String getApiEndpoint() {
+                    return "/my/endpoint";
+                }
+
+                @Override
+                public RequestBodyContent getRequestBody() {
+                    return NoBodyContent.INSTANCE;
+                }
+
+                @Override
+                public String parseResponse(final String responseStr) throws IOException {
+                    return responseStr;
+                }
+            };
+            final RestResponse result = restClient.submitRequest(request);
+
+            // Validate response.
             assertEquals(RESPONSE_DATA, result.getResponseStr());
         }
     }

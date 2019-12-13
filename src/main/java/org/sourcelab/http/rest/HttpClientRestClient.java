@@ -57,6 +57,7 @@ import org.sourcelab.http.rest.interceptor.RequestInterceptor;
 import org.sourcelab.http.rest.request.Request;
 import org.sourcelab.http.rest.request.RequestMethod;
 import org.sourcelab.http.rest.request.RequestParameter;
+import org.sourcelab.http.rest.request.body.NoBodyContent;
 import org.sourcelab.http.rest.request.body.RequestBodyContent;
 import org.sourcelab.http.rest.request.body.UrlEncodedFormBodyContent;
 
@@ -435,11 +436,15 @@ public class HttpClientRestClient implements RestClient {
 
             // Attach submitRequest params
             requestParameters
-                .forEach(parameter ->  params.add(new BasicNameValuePair(parameter.getName(), parameter.getValue()))
-            );
-            return new UrlEncodedFormEntity(params);
+                .forEach(parameter -> params.add(new BasicNameValuePair(parameter.getName(), parameter.getValue()))
+                );
+            return new UrlEncodedFormEntity(params, StandardCharsets.UTF_8);
+        } else if ( requestBodyContent instanceof NoBodyContent) {
+            return null;
         } else {
-            return new StringEntity(requestBodyContent.toString());
+            return new StringEntity(
+                requestBodyContent.toString(), StandardCharsets.UTF_8
+            );
         }
     }
 
