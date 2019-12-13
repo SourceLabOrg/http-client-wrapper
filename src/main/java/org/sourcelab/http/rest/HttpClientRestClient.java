@@ -436,8 +436,7 @@ public class HttpClientRestClient implements RestClient {
 
             // Attach submitRequest params
             requestParameters
-                .forEach(parameter -> params.add(new BasicNameValuePair(parameter.getName(), parameter.getValue()))
-                );
+                .forEach(parameter -> params.add(new BasicNameValuePair(parameter.getName(), parameter.getValue())));
             return new UrlEncodedFormEntity(params, StandardCharsets.UTF_8);
         } else if ( requestBodyContent instanceof NoBodyContent) {
             return null;
