@@ -6,7 +6,7 @@
 
     <groupId>org.sourcelab.http</groupId>
     <artifactId>http-client-wrapper</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
     <packaging>jar</packaging>
 
     <!-- Require Maven 3.3.9 -->

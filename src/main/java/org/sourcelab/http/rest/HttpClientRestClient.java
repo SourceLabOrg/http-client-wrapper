@@ -279,16 +279,18 @@ public class HttpClientRestClient implements RestClient {
             final URIBuilder uriBuilder = new URIBuilder(url)
                 .setCharset(StandardCharsets.UTF_8);
 
+            // Process request parameters/
+            List<RequestParameter> requestParameters = new ArrayList<>();
             if (requestBodyContent instanceof UrlEncodedFormBodyContent) {
-                final List<RequestParameter> requestParameters = processRequestParameters(
-                    ((UrlEncodedFormBodyContent) requestBodyContent).getRequestParameters(),
-                    requestContext
-                );
+                requestParameters = ((UrlEncodedFormBodyContent) requestBodyContent).getRequestParameters();
+            }
 
-                // Attach submitRequest params
-                for (final RequestParameter requestParameter : requestParameters) {
-                    uriBuilder.setParameter(requestParameter.getName(), requestParameter.getValue());
-                }
+            // run parameters through interceptors.
+            requestParameters = processRequestParameters(requestParameters, requestContext);
+
+            // Attach submitRequest params
+            for (final RequestParameter requestParameter : requestParameters) {
+                uriBuilder.setParameter(requestParameter.getName(), requestParameter.getValue());
             }
 
             // Build Get Request
